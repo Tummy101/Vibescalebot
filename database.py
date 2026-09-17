@@ -626,8 +626,8 @@ def create_custom_quote(
         int(posts), int(likes), int(reposts), int(bookmarks), int(views), int(comments),
         int(duration_days), notes, 'awaiting_quote', datetime.now().isoformat()
     ))
-    connection.commit()    connection.close()
-
+    connection.commit()
+    connection.close()
 
 
 def get_user_custom_quotes(telegram_user_id):
