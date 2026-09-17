@@ -1,0 +1,17 @@
+app = "vibescalebot"
+primary_region = "jnb"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  DATABASE_NAME = "/data/vibescale.db"
+
+[mounts]
+  source = "vibescalebot_data"
+  destination = "/data"
+  initial_size = "1gb"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
