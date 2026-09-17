@@ -1,7 +1,10 @@
+import os
 import sqlite3
 from datetime import datetime
 
-DATABASE_NAME = "vibescale.db"
+# Fly.io mounts the persistent SQLite volume at /data.
+# Locally, this remains vibescale.db so development behavior is unchanged.
+DATABASE_NAME = os.getenv("DATABASE_NAME", "vibescale.db")
 
 
 def get_connection():
@@ -71,6 +74,28 @@ def initialize_database():
         cursor.execute(
             "ALTER TABLE orders ADD COLUMN activated_at TEXT"
         )
+
+    # Ensure the custom-plan table exists before applying migrations to it.
+    # A fresh Fly volume starts empty, so ALTER TABLE must not run first.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS custom_quotes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            request_id TEXT UNIQUE NOT NULL,
+            telegram_user_id INTEGER NOT NULL,
+            telegram_username TEXT,
+            x_username TEXT NOT NULL,
+            posts INTEGER NOT NULL,
+            likes INTEGER NOT NULL,
+            reposts INTEGER NOT NULL,
+            bookmarks INTEGER NOT NULL,
+            views INTEGER NOT NULL,
+            comments INTEGER NOT NULL,
+            duration_days INTEGER NOT NULL,
+            notes TEXT,
+            status TEXT NOT NULL DEFAULT 'awaiting_quote',
+            created_at TEXT NOT NULL
+        )
+    """)
 
     # Custom-plan management fields.
     cursor.execute("PRAGMA table_info(custom_quotes)")
@@ -601,8 +626,8 @@ def create_custom_quote(
         int(posts), int(likes), int(reposts), int(bookmarks), int(views), int(comments),
         int(duration_days), notes, 'awaiting_quote', datetime.now().isoformat()
     ))
-    connection.commit()
-    connection.close()
+    connection.commit()    connection.close()
+
 
 
 def get_user_custom_quotes(telegram_user_id):
